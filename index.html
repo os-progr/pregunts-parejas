@@ -466,6 +466,12 @@
             magnet.classList.add('fade-out');
             instruction.classList.add('fade-out');
 
+            // Eliminamos físicamente los elementos después de la animación para que no estorben
+            setTimeout(() => {
+                magnet.style.display = 'none';
+                instruction.style.display = 'none';
+            }, 800);
+
             applyRandomQuestion();
 
             document.getElementById('oracle-card').classList.add('visible');

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Magnetismo Místico - Oráculo de la Conexión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Quicksand:wght@300;500;700&display=swap');
+
+        :root {
+            --accent: #d4af37;
+            --accent-glow: rgba(212, 175, 55, 0.4);
+            --bg: #050505;
+            --base-gold: #d4af37;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg);
+            color: #fff;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            touch-action: none;
+            cursor: none;
+            /* Hide default cursor for custom trail */
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        /* Custom Cursor Trail */
+        .cursor-p {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 15px var(--accent);
+            mix-blend-mode: screen;
+            transition: transform 0.1s ease;
+        }
+
+        .ui-layer {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .serif-font {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Magent Core Re-designed */
+        .magnet-core {
+            width: 120px;
+            height: 120px;
+            border: 1px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-top: auto;
+            margin-bottom: 80px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px var(--accent-glow), inset 0 0 20px var(--accent-glow);
+        }
+
+        .magnet-inner {
+            position: absolute;
+            inset: 10px;
+            border-radius: 50%;
+            border: 1px dashed var(--accent);
+            animation: spin 10s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .magnet-core.charging {
+            transform: scale(0.9);
+            border-width: 3px;
+            box-shadow: 0 0 60px var(--accent);
+            background: var(--accent);
+            color: #000;
+        }
+
+        /* Floating Runes Background */
+        .runes-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.15;
+            font-family: 'Cinzel', serif;
+            font-size: 2rem;
+            color: var(--accent);
+        }
+
+        .rune {
+            position: absolute;
+            animation: floatRune 20s infinite linear;
+        }
+
+        @keyframes floatRune {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-10vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Card with Neomorphic Glow */
+        #oracle-card {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.85);
+            width: 340px;
+            padding: 50px 40px;
+            background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(5, 5, 5, 0.95));
+            border: 1px solid var(--accent);
+            border-radius: 40px;
+            text-align: center;
+            opacity: 0;
+            transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+            pointer-events: none;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 1), 0 0 40px var(--accent-glow);
+        }
+
+        #oracle-card.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        .card-category {
+            font-size: 10px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .btn-next {
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 12px 30px;
+            border-radius: 100px;
+            font-size: 11px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            pointer-events: auto;
+        }
+
+        .btn-next:hover {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 10px 30px var(--accent-glow);
+            transform: translateY(-3px);
+        }
+
+        .charge-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.1s linear;
+            opacity: 0.2;
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="canvas"></canvas>
+    <div id="cursor" class="cursor-p"></div>
+    <div id="runes" class="runes-container"></div>
+
+    <div class="ui-layer">
+        <header id="main-header" class="mt-20 text-center transition-all duration-1000">
+            <h1 class="serif-font text-4xl tracking-[0.6em] text-[var(--accent)]" id="title-text">ORÁCULO</h1>
+            <div class="flex items-center justify-center gap-3 opacity-50 text-[9px] tracking-[0.5em] uppercase mt-3">
+                <span id="sub-1">Magnetismo</span>
+                <i class="fas fa-gem text-[var(--accent)]" id="main-icon"></i>
+                <span id="sub-2">Místico</span>
+            </div>
+        </header>
+
+        <div id="oracle-card">
+            <div class="card-category" id="card-cat">Sincronía</div>
+            <h2 class="serif-font text-2xl mb-8 tracking-widest text-white" id="card-title">...</h2>
+            <div class="w-16 h-[1px] bg-[var(--accent)] mx-auto mb-8 opacity-50"></div>
+            <p class="text-base font-light leading-relaxed text-gray-300 italic px-4" id="card-desc">
+                Cargando energía universal...
+            </p>
+            <button class="btn-next" onclick="nextQuestion()">Nuevo Destino</button>
+        </div>
+
+        <div class="magnet-core" id="magnet">
+            <div class="magnet-inner"></div>
+            <div id="charge-fill" class="charge-fill"></div>
+            <i class="fas fa-fingerprint text-3xl opacity-60"></i>
+        </div>
+
+        <div id="instruction" class="mb-12 opacity-40 text-[10px] tracking-[5px] uppercase transition-all duration-700">
+            Mantén la huella para conectar
+        </div>
+    </div>
+
+    <script src="questions.js"></script>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const cursor = document.getElementById('cursor');
+        const runesContainer = document.getElementById('runes');
+
+        let particles = [];
+        let mouse = { x: -100, y: -100 };
+        let isCharging = false;
+        let charge = 0;
+        let isRevealed = false;
+        let audioCtx, oscillator, gainNode;
+
+        // Rune symbols
+        const runeChars = "ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚻᚾᛁᛃᛇᛈᛉᛊᛋᛏᛒᛖᛗᛚᛜᛝᛟᛞ";
+
+        // Category Colors
+        const catThemes = {
+            "Magnetismo Dorado": "#d4af37",
+            "Fuego": "#ff4d4d",
+            "Alma": "#a855f7",
+            "Deseo": "#ec4899",
+            "Misterio": "#3b82f6",
+            "Eternidad": "#10b981",
+            "default": "#d4af37"
+        };
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playMysticHums() {
+            if (!audioCtx) return;
+            oscillator = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(110, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+        }
+
+        function stopAudio() {
+            if (gainNode) {
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+                setTimeout(() => oscillator?.stop(), 500);
+            }
+        }
+
+        function createRunes() {
+            for (let i = 0; i < 30; i++) {
+                const rune = document.createElement('div');
+                rune.className = 'rune';
+                rune.innerText = runeChars[Math.floor(Math.random() * runeChars.length)];
+                rune.style.left = Math.random() * 100 + 'vw';
+                rune.style.animationDelay = Math.random() * 20 + 's';
+                rune.style.fontSize = (Math.random() * 20 + 20) + 'px';
+                runesContainer.appendChild(rune);
+            }
+        }
+
+        function init() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for (let i = 0; i < 200; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 0.5,
+                    baseX: Math.random() * canvas.width,
+                    baseY: Math.random() * canvas.height,
+                    density: (Math.random() * 30) + 1,
+                    color: '#ffffff'
+                });
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const currentAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                p.baseX += Math.sin(Date.now() * 0.001 + i) * 0.1;
+                p.baseY += Math.cos(Date.now() * 0.001 + i) * 0.1;
+
+                let dx = mouse.x - p.x;
+                let dy = mouse.y - p.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                let forceDirectionX = dx / distance;
+                let forceDirectionY = dy / distance;
+                let maxDistance = isCharging ? 400 + (charge * 2) : 200;
+                let force = (maxDistance - distance) / maxDistance;
+
+                if (distance < maxDistance) {
+                    let strength = isCharging ? p.density * 2 : p.density;
+                    p.x += forceDirectionX * force * strength;
+                    p.y += forceDirectionY * force * strength;
+                } else {
+                    p.x -= (p.x - p.baseX) / 25;
+                    p.y -= (p.y - p.baseY) / 25;
+                }
+
+                ctx.fillStyle = p.baseX % 10 > 8 ? currentAccent : '#ffffff';
+                ctx.globalAlpha = isCharging ? 0.8 : 0.3;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            requestAnimationFrame(animate);
+        }
+
+        const magnet = document.getElementById('magnet');
+        const fill = document.getElementById('charge-fill');
+        const instruction = document.getElementById('instruction');
+
+        function startCharge(e) {
+            if (isRevealed) return;
+            initAudio();
+            playMysticHums();
+            isCharging = true;
+            magnet.classList.add('charging');
+            updateMouse(e);
+        }
+
+        function stopCharge() {
+            if (isRevealed) return;
+            stopAudio();
+            isCharging = false;
+            magnet.classList.remove('charging');
+            if (charge < 100) {
+                charge = 0;
+                fill.style.width = '0%';
+            }
+        }
+
+        function updateMouse(e) {
+            const x = e.touches ? e.touches[0].clientX : e.clientX;
+            const y = e.touches ? e.touches[0].clientY : e.clientY;
+            mouse.x = x;
+            mouse.y = y;
+
+            // Cursor trail smooth follow
+            cursor.style.transform = `translate(${x}px, ${y}px)`;
+
+            // Create mini-sparks
+            if (Math.random() > 0.8) createSpark(x, y);
+        }
+
+        function createSpark(x, y) {
+            const spark = document.createElement('div');
+            spark.className = 'cursor-p';
+            spark.style.width = '2px';
+            spark.style.height = '2px';
+            spark.style.left = '0px';
+            spark.style.top = '0px';
+            spark.style.transform = `translate(${x}px, ${y}px)`;
+            document.body.appendChild(spark);
+
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * 30;
+
+            setTimeout(() => {
+                spark.style.opacity = '0';
+                spark.style.transform = `translate(${x + Math.cos(angle) * dist}px, ${y + Math.sin(angle) * dist}px) scale(0)`;
+                setTimeout(() => spark.remove(), 500);
+            }, 50);
+        }
+
+        setInterval(() => {
+            if (isCharging && charge < 100 && !isRevealed) {
+                charge += 1.2;
+                fill.style.width = charge + '%';
+
+                // Pitch up hum
+                if (oscillator) {
+                    oscillator.frequency.exponentialRampToValueAtTime(110 + (charge * 2), audioCtx.currentTime + 0.1);
+                    gainNode.gain.linearRampToValueAtTime(charge / 300, audioCtx.currentTime + 0.1);
+                }
+
+                if (charge >= 100) revealOracle();
+            }
+        }, 30);
+
+        function revealOracle() {
+            isRevealed = true;
+            isCharging = false;
+            stopAudio();
+
+            // Success sound chime
+            const chime = audioCtx.createOscillator();
+            const chimeGain = audioCtx.createGain();
+            chime.type = 'sine';
+            chime.frequency.setValueAtTime(880, audioCtx.currentTime);
+            chimeGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            chimeGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1);
+            chime.connect(chimeGain);
+            chimeGain.connect(audioCtx.destination);
+            chime.start();
+            chime.stop(audioCtx.currentTime + 1);
+
+            magnet.classList.add('fade-out');
+            instruction.classList.add('fade-out');
+
+            applyRandomQuestion();
+
+            document.getElementById('oracle-card').classList.add('visible');
+            if (navigator.vibrate) navigator.vibrate([50, 20, 100]);
+        }
+
+        function applyRandomQuestion() {
+            const item = oracleData[Math.floor(Math.random() * oracleData.length)];
+
+            // Dynamic Theme Update
+            const themeColor = catThemes[item.c] || catThemes['default'];
+            document.documentElement.style.setProperty('--accent', themeColor);
+            document.documentElement.style.setProperty('--accent-glow', themeColor + '66');
+
+            document.getElementById('card-cat').innerText = item.c;
+            document.getElementById('card-cat').style.color = themeColor;
+            document.getElementById('card-title').innerText = item.t;
+            document.getElementById('card-desc').innerText = item.d;
+        }
+
+        function nextQuestion() {
+            const card = document.getElementById('oracle-card');
+            card.style.opacity = '0';
+            card.style.transform = 'translate(-50%, -50%) scale(0.9)';
+
+            setTimeout(() => {
+                applyRandomQuestion();
+                card.style.opacity = '1';
+                card.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 500);
+        }
+
+        magnet.addEventListener('mousedown', startCharge);
+        magnet.addEventListener('touchstart', startCharge);
+        window.addEventListener('mouseup', stopCharge);
+        window.addEventListener('touchend', stopCharge);
+        window.addEventListener('mousemove', updateMouse);
+        window.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            updateMouse(e);
+        }, { passive: false });
+
+        init();
+        animate();
+        createRunes();
+        window.addEventListener('resize', init);
+    </script>
+</body>
+
+</html>
